@@ -7,6 +7,8 @@ import logging
 from .config import settings
 from .tools import (
     buscar_projetos_recentes,
+    buscar_projetos_mais_votados,
+    buscar_noticias_tema,
     obter_detalhes_projeto,
     buscar_noticias_relacionadas
 )
@@ -24,26 +26,25 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Inicializar servidor MCP
-mcp = FastMCP(
-    settings.mcp_server_name,
-    dependencies=["seleniumbase", "httpx"]
-)
+mcp = FastMCP(settings.mcp_server_name)
 
 
-# ===== REGISTRAR TOOLS =====
+# Registrar Tools
 mcp.tool()(buscar_projetos_recentes)
+mcp.tool()(buscar_projetos_mais_votados)
+mcp.tool()(buscar_noticias_tema)
 mcp.tool()(obter_detalhes_projeto)
 mcp.tool()(buscar_noticias_relacionadas)
 
 
-# ===== REGISTRAR RESOURCES =====
+# Registrar Resources
 @mcp.resource("links://e-cidadania")
 async def links_ecidadania() -> str:
     """Links importantes do e-Cidadania"""
     return await get_links_ecidadania()
 
 
-# ===== REGISTRAR PROMPTS =====
+# Registrar Prompts
 @mcp.prompt()
 def prompt_analise_projeto() -> str:
     """Prompt para análise de projetos de lei"""

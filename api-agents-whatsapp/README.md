@@ -2,7 +2,7 @@
 
 Servidor FastAPI que utiliza agentes Agno com integração MCP para gerar respostas inteligentes a mensagens do WhatsApp sobre legislação brasileira.
 
-## 🎯 Visão Geral
+## Visão Geral
 
 Esta API é o núcleo de processamento de mensagens do projeto DevsImpacto. Ela recebe mensagens de texto ou áudio do usuário via WhatsApp e gera respostas usando:
 
