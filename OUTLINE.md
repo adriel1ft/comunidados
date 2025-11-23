@@ -110,3 +110,11 @@
   * pedimos pra pessoa se identificar passando os parâmetros que dizemos
   * podemos decidir aí também qual categoria a pessoa se encaixa
   * pra simplificar, escolhemos os assuntos disponíveis na camara dos deputados
+
+
+orquestrador
+- agrupar mensagens por janela de tempo
+- gerenciar session id (quais sessões estão ativas no momento) com o mongo
+- gerenciar informações dos usuários
+- if/else de processamento de áudio
+- mcp de cadastro do usuário
