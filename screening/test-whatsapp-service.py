@@ -372,7 +372,7 @@ async def main():
     print("=" * 70)
     print(f"✅ Health Check: Sucesso")
     print(f"✅ Envio de Texto: {'Sucesso' if send_text_success else 'Falha'}")
-    print(f"✅ Envio com Mídia: {'Falha' if send_media_success else 'Falha'}")
+    print(f"✅ Envio com Mídia: {'Sucesso' if send_media_success else 'Falha'}")
     print(f"✅ Recebimento: {'Sucesso' if receive_success else 'Aguardando'}")
     print("\n" + "=" * 70)
 
