@@ -101,7 +101,7 @@ curl -X POST "http://localhost:8001/text-to-speech" \
 
 ```json
 {
-  "audio_url": "s3://audio-processing/tts/20251122/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.mp3",
+  "audio_url": "https://s3.amazonaws.com/audio-processing/tts/20251122/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.mp3?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...",
   "duration_seconds": null,
   "voice": "nova",
   "text_length": 65
