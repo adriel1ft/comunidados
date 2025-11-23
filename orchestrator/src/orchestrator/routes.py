@@ -35,7 +35,8 @@ async def receive_message(request: IncomingMessageRequest):
         user_id=request.user_id,
         chatId=request.chatId,
         message_type=request.message_type,
-        message=request.message
+        message=request.message,
+        media=request.media
     )
     
     return result

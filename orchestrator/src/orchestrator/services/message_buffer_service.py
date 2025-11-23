@@ -12,6 +12,7 @@ Fluxo:
 import asyncio
 import logging
 from typing import Dict, List, Optional
+from pydantic import BaseModel, Field
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from enum import Enum
@@ -34,8 +35,10 @@ class BufferedMessage:
     user_id: str
     message_type: MessageType
     message: str
-    timestamp: datetime
     chatId: str
+    timestamp: datetime
+    media: Optional[dict] = None
+
 
 
 class MessageBuffer:
@@ -131,7 +134,8 @@ class MessageBufferService:
         user_id: str,
         chatId: str,
         message_type: str,
-        message: str
+        message: str,
+        media: Optional[bytes] = None
     ) -> None:
         """
         Adiciona mensagem ao buffer e inicia/reinicia timer
@@ -154,6 +158,7 @@ class MessageBufferService:
             chatId=chatId,
             message_type=MessageType(message_type),
             message=message,
+            media=media,
             timestamp=datetime.utcnow()
         )
         buffer.add_message(message)

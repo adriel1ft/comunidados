@@ -3,6 +3,7 @@ import httpx
 import base64
 import tempfile
 from typing import Optional
+from fastapi import File
 
 from ..config import settings
 
@@ -34,7 +35,7 @@ class AudioService:
             # Enviar para API 2
             async with httpx.AsyncClient() as client:
                 with open(tmp_path, "rb") as audio_file:
-                    files = {"audio": audio_file}
+                    files = {"file": audio_file}
                     response = await client.post(
                         f"{settings.audio_api_url}/speech-to-text",
                         files=files,

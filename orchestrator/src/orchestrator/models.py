@@ -36,10 +36,12 @@ class IncomingMessageRequest(BaseModel):
 class ProcessedMessageResponse(BaseModel):
     """Resposta processada para o WhatsApp"""
     user_id: str
-    response_text: str
-    audio_url: Optional[str] = None
-    auxiliary_text: Optional[str] = None
-    session_id: str
+    chatId: str
+    
+    
+    
+    
+    
 
 
 class UserProfile(BaseModel):

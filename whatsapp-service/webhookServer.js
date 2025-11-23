@@ -12,7 +12,7 @@ export function startWebhookServer(whatsappClient, port) {
 
   // Webhook para o orquestrador enviar mensagens
   app.post("/send-message", async (req, res) => {
-    const { chatId, message, mediaUrl, mimetype } = req.body;
+    const { chatId, message, mediaUrl, mimeType, auxiliaryText } = req.body;
 
     if (!chatId || !message) {
       return res.status(400).json({ success: false, error: "Parâmetros 'chatId' e 'message' são obrigatórios." });
@@ -22,14 +22,20 @@ export function startWebhookServer(whatsappClient, port) {
       let media = null;
       if (mediaUrl) {
         console.log(`[📥 Baixando Mídia] de ${mediaUrl}`);
-        media = await MessageMedia.fromUrl(mediaUrl, { unsafeMime: mimetype != null });
-        if (mimetype) {
-            media.mimetype = mimetype;
+        media = await MessageMedia.fromUrl(mediaUrl, { unsafeMime: mimeType != null });
+        if (mimeType) {
+            media.mimeType = mimeType;
         }
       }
 
       console.log(`[📤 Enviando] Para: ${chatId}`);
-      const msg = await whatsappClient.sendMessage(chatId, media || message, { caption: media ? message : undefined });
+      const msg = await whatsappClient.sendMessage(chatId, media ? media : message);
+
+      if (auxiliaryText) {
+        setTimeout(() => {}, 1500); // Pequena pausa para evitar problemas de envio rápido demais
+        await whatsappClient.sendMessage(chatId, auxiliaryText);
+      }
+      console.log(`[✅ Enviado] Mensagem ID: ${msg.id.id}`);
       
       res.status(200).json({ success: true, messageId: msg.id.id });
     } catch (error) {

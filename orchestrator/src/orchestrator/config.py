@@ -29,8 +29,8 @@ class Settings(BaseSettings):
     mcp_users_url: str = "http://localhost:8000/mcp"
     
     # Message Batching
-    message_batch_timeout_seconds: int = 30  # Timeout total
-    message_inter_timeout_seconds: int = 15  # Timeout entre mensagens
+    message_batch_timeout_seconds: int = 5  # Timeout total
+    message_inter_timeout_seconds: int = 5  # Timeout entre mensagens
 
 
 settings = Settings()

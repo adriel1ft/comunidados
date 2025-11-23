@@ -108,7 +108,7 @@ class AgentService:
             logger.info(f"✅ Resposta recebida: {response_text[:80]}...")
             
             # Determinar se deve enviar áudio
-            should_send_audio = self._should_send_audio(request)
+            should_send_audio = self._should_send_audio(request, response_output)
             
             # Criar resposta
             response = AgentResponse(
@@ -224,7 +224,7 @@ class AgentService:
             "Para mais informações, visite e-Cidadania.camara.leg.br"
         )
     
-    def _should_send_audio(self, request: AgentRequest) -> bool:
+    def _should_send_audio(self, request: AgentRequest, response_output) -> bool:
         """
         Determina se a resposta deve ser enviada em áudio
         
@@ -234,6 +234,13 @@ class AgentService:
         Returns:
             True se deve enviar áudio
         """
+        if "should_send_audio" in dir(response_output):
+            if response_output.should_send_audio:
+                return True
+        
+        if "content" in dir(response_output):
+            if "should_send_audio" in response_output.content.lower():
+                return True
         # Lógica 1: Se a mensagem original foi áudio
         if request.message_type == "audio":
             return True

@@ -3,6 +3,7 @@ import httpx
 from datetime import datetime
 from typing import Optional, Dict, List
 from pymongo import MongoClient
+import json
 
 from ..config import settings
 from ..models_db import SessionDB
@@ -40,7 +41,8 @@ class MessageService:
         user_id: str,
         chatId: str,
         message_type: str,
-        message: str
+        message: str,
+        media: Optional[bytes] = None
     ) -> Dict:
         """
         Recebe mensagem e adiciona ao buffer
@@ -68,7 +70,8 @@ class MessageService:
             user_id=user_id,
             chatId=chatId,
             message_type=message_type,
-            message=message
+            message=message,
+            media=media
         )
         
         # Retornar status do buffer
@@ -136,18 +139,14 @@ class MessageService:
                     response_text,
                     auxiliary_text
                 )
-
-            logger.info(f"Mensagens: {messages}")
             
             # 6. Retornar resposta
             result = {
-                "user_id": user_id,
                 "chatId": user_id,
-                "session_id": session_id,
-                "response_text": response_text,
-                "audio_url": audio_url,
-                "auxiliary_text": auxiliary_text,
-                "messages_grouped": len(messages)
+                "message": response_text,
+                "mediaUrl": audio_url,
+                "mimeType": "audio/ogg" if audio_url else None,
+                "auxiliaryText": auxiliary_text
             }
             
             # Enviar para WhatsApp
@@ -196,15 +195,14 @@ class MessageService:
         combined_parts = []
         
         for i, msg in enumerate(messages, 1):
-            if msg.message_type.value == "text":
+            if msg.message_type.value == "chat":
                 # Texto simples
                 combined_parts.append(msg.message)
                 logger.info(f"   [{i}] Texto: {msg.message[:50]}...")
-            
-            elif msg.message_type.value == "audio":
+            elif msg.media:
                 # Transcrever áudio
                 logger.info(f"   [{i}] Áudio: transcrevendo...")
-                transcribed = await self.audio_service.transcribe_audio(msg.message)
+                transcribed = await self.audio_service.transcribe_audio(msg.media['data'])
                 if transcribed:
                     combined_parts.append(transcribed)
                     logger.info(f"       ✅ {transcribed[:50]}...")
@@ -235,16 +233,9 @@ class MessageService:
         logger.info(f"🆕 Nova sessão criada: {session_id}")
         return session_id
     
-    async def _send_to_whatsapp(self, message: Dict) -> bool:
+    async def _send_to_whatsapp(self, payload: Dict) -> bool:
         """Envia resposta para WhatsApp via webhook"""
         try:
-            payload = {
-                "chatId": message["chatId"],
-                "message": message["response_text"],
-                "audio_url": message.get("audio_url"),
-                "auxiliary_text": message.get("auxiliary_text"),
-                "messages_grouped": message.get("messages_grouped", 1)
-            }
             logger.info(f"📤 Enviando para WhatsApp: {payload}")
             
             async with httpx.AsyncClient() as client:
@@ -268,10 +259,11 @@ class MessageService:
     async def _send_error_response(self, user_id: str, chatId: str, session_id: str) -> Dict:
         """Envia resposta de erro"""
         error_message = {
-            "user_id": user_id,
             "chatId": chatId,
-            "session_id": session_id,
-            "response_text": "Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente."
+            "message": "Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.",
+            "mediaUrl": None,
+            "mimeType": None,
+            "auxiliaryText": None
         }
         await self._send_to_whatsapp(error_message)
         return error_message
