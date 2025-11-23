@@ -1,0 +1,2 @@
+[console_scripts]
+api-mcp-users = api_mcp_users.main:main

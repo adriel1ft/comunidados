@@ -29,8 +29,8 @@ class Settings(BaseSettings):
     
     # MCP Servers
     mcp_projetos_lei_url: str = "http://localhost:8000/mcp"
+    mcp_users_url: str = "http://localhost:8001/mcp"
     # mcp_audio_url: str = "http://localhost:8001/mcp"
-    # mcp_usuarios_url: str = "http://localhost:8002/mcp"
 
 
 settings = Settings()

@@ -26,7 +26,8 @@ class Settings(BaseSettings):
     whatsapp_service_url: str = "http://localhost:5002"
     audio_api_url: str = "http://localhost:5001"
     agent_api_url: str = "http://localhost:5000"
-    mcp_users_url: str = "http://localhost:8000/mcp"
+    mcp_projetos_lei_url: str = "http://localhost:8000/mcp"
+    mcp_users_url: str = "http://localhost:8001/mcp"
     
     # Message Batching
     message_batch_timeout_seconds: int = 5  # Timeout total

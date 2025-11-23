@@ -7,6 +7,7 @@ from typing import Optional
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from agno.tools.mcp import MCPTools
+from agno.tools.mcp import MultiMCPTools
 from .config import settings
 from .models import AgentRequest, AgentResponse
 from datetime import datetime
@@ -46,20 +47,37 @@ class AgentService:
         Returns:
             MCPTools conectado ou None se falhar
         """
+        mcp_tools_list = []
+
         try:
             logger.info(f"🔌 Conectando ao MCP: {settings.mcp_projetos_lei_url}")
             
-            mcp_tools = MCPTools(
+            mcp_projetos_lei = MCPTools(
                 transport="streamable-http",
                 url=settings.mcp_projetos_lei_url
             )
-            
+
+            mcp_tools_list.append(mcp_projetos_lei)
             logger.info(f"✅ MCP conectado com sucesso")
-            return mcp_tools
         except Exception as e:
             logger.error(f"❌ Erro ao conectar ao MCP: {e}")
-            logger.warning("⚠️  Continuando sem ferramentas MCP")
+        
+        try:
+            logger.info(f"🔌 Conectando ao MCP Usuários: {settings.mcp_users_url}")
+            mcp_users = MCPTools(
+                transport="streamable-http",
+                url=settings.mcp_users_url
+            )
+            mcp_tools_list.append(mcp_users)
+            logger.info("✅ MCP Usuários conectado")
+        except Exception as e:
+            logger.error(f"❌ Erro ao conectar MCP Usuários: {e}")
+
+        if not mcp_tools_list:
+            logger.warning("⚠️  Nenhum MCP disponível, agente funcionará sem ferramentas")
             return None
+        
+        return mcp_tools_list
     
     async def process_message(self, request: AgentRequest) -> AgentResponse:
         """
@@ -80,23 +98,20 @@ class AgentService:
             prompt = self._build_prompt(request)
             
             # Configurar ferramentas MCP
-            mcp_tools = await self._setup_mcp_tools()
+            mcp_tools_list = await self._setup_mcp_tools()
             
             # Executar agente com context manager se MCP disponível
-            if mcp_tools:
-                async with mcp_tools:
-                    # Criar agente com tools MCP
-                    agent_with_tools = Agent(
-                        model=OpenAIChat(
-                            id=settings.agent_model,
-                            api_key=settings.openai_api_key,
-                        ),
-                        tools=[mcp_tools],
-                        markdown=True
-                    )
-                    
-                    logger.info("📤 Enviando prompt para agente...")
-                    response_output = await agent_with_tools.arun(input=prompt)
+            if mcp_tools_list:
+                agent_with_tools = Agent(
+                    model=OpenAIChat(
+                        id=settings.agent_model,
+                        api_key=settings.openai_api_key,
+                    ),
+                    tools=[tool for tool in mcp_tools_list],
+                    markdown=True
+                )
+                logger.info("📤 Enviando prompt para agente...")
+                response_output = await agent_with_tools.arun(input=prompt)
             else:
                 # Fallback: usar agente sem tools
                 logger.warning("⚠️  Usando agente sem ferramentas MCP")
@@ -241,6 +256,7 @@ class AgentService:
         if "content" in dir(response_output):
             if "should_send_audio" in response_output.content.lower():
                 return True
+
         # Lógica 1: Se a mensagem original foi áudio
         if request.message_type == "audio":
             return True

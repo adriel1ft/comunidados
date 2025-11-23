@@ -101,11 +101,11 @@ Esta API é uma dependência da `api-agents-whatsapp`.
     Edite o arquivo `.env` e preencha a variável `OPENAI_API_KEY`.
 
 4.  **Inicie o servidor (Terminal 2)**:
-    O orquestrador espera que este serviço rode na porta `5002`.
+    O orquestrador espera que este serviço rode na porta `5001`.
     ```bash
-    uvicorn api_audio_processing.main:app --host 0.0.0.0 --port 5002 --reload
+    uvicorn api_audio_processing.main:app --host 0.0.0.0 --port 5001 --reload
     ```
-    > 🖥️ Este serviço estará rodando em `http://localhost:5002`. Mantenha este terminal aberto.
+    > 🖥️ Este serviço estará rodando em `http://localhost:5001`. Mantenha este terminal aberto.
 
 ---
 
@@ -168,14 +168,14 @@ Esta API é uma dependência da `api-agents-whatsapp`.
     Verifique se as URLs no arquivo `.env` correspondem às portas dos serviços que você iniciou:
 
     - `AGENT_API_URL=http://localhost:5000`
-    - `AUDIO_API_URL=http://localhost:5002`
-    - `WHATSAPP_SERVICE_URL=http://localhost:3001`
+    - `AUDIO_API_URL=http://localhost:5001`
+    - `WHATSAPP_SERVICE_URL=http://localhost:5002`
 
 4.  **Inicie o servidor (Terminal 4)**:
     ```bash
     orchestrator --reload
     ```
-    > 🖥️ Este serviço estará rodando em `http://localhost:5001`. Mantenha este terminal aberto.
+    > 🖥️ Este serviço estará rodando em `http://localhost:3000`. Mantenha este terminal aberto.
 
 #### C. Serviço do WhatsApp (`whatsapp-service`)
 
@@ -195,7 +195,7 @@ Esta API é uma dependência da `api-agents-whatsapp`.
 
     Edite o arquivo `.env` e certifique-se de que a `ORCHESTRATOR_URL` aponta para o serviço correto:
 
-    - `ORCHESTRATOR_URL=http://localhost:5001/receive-message`
+    - `ORCHESTRATOR_URL=http://localhost:3000/receive-message`
 
 3.  **Inicie o serviço e autentique (Terminal 5)**:
     ```bash
@@ -212,9 +212,9 @@ Esta API é uma dependência da `api-agents-whatsapp`.
 Ao final, você terá 5 terminais executando cada um dos serviços:
 
 - **Terminal 1**: `api-mcp-projetos-lei` (Porta 8000)
-- **Terminal 2**: `api-audio-processing` (Porta 5002)
+- **Terminal 2**: `api-audio-processing` (Porta 5001)
 - **Terminal 3**: `api-agents-whatsapp` (Porta 5000)
-- **Terminal 4**: `orchestrator` (Porta 5001)
-- **Terminal 5**: `whatsapp-service` (Porta 3001 para webhook)
+- **Terminal 4**: `orchestrator` (Porta 3000)
+- **Terminal 5**: `whatsapp-service` (Porta 5002 para webhook)
 
 Com todos os serviços rodando, você pode enviar uma mensagem para o número de WhatsApp conectado e o fluxo completo do projeto será executado.
