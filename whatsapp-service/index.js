@@ -5,7 +5,7 @@ import { MessageHandlers } from "./handlers.js"; // Importar a classe
 
 dotenv.config();
 
-const WEBHOOK_PORT = process.env.WEBHOOK_PORT || 3001;
+const WEBHOOK_PORT = process.env.WEBHOOK_PORT || 5002;
 const WHATSAPP_SESSION = process.env.WHATSAPP_SESSION || "default";
 const ORCHESTRATOR_URL = process.env.ORCHESTRATOR_URL; // URL do serviço que processará a mensagem
 

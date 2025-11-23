@@ -12,7 +12,9 @@ from .tools import (
 )
 from .resources import get_links_ecidadania
 from .prompts import get_prompt_analise_projeto
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Configurar logging
 logging.basicConfig(
@@ -52,9 +54,9 @@ def main() -> None:
     """Ponto de entrada principal da aplicação"""
     logger.info(
         f"Iniciando {settings.mcp_server_name} v{settings.mcp_server_version} "
-        f"com transporte 'streamable-http' na porta 8000"
+        f"com transporte 'streamable-http' na porta {os.getenv('MCP_SERVER_PORT', 8000)}"
     )
-    mcp.run(transport="streamable-http", port=8000)
+    mcp.run(transport="streamable-http", port=int(os.getenv("MCP_SERVER_PORT", 8000)))
 
 
 if __name__ == "__main__":

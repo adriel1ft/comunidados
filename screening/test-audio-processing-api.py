@@ -10,7 +10,7 @@ import httpx
 from pathlib import Path
 
 # URL da API local
-API_BASE_URL = "http://localhost:8001"
+API_BASE_URL = "http://localhost:5001"
 
 # Caminho do arquivo de áudio para teste (Speech-to-Text)
 AUDIO_FILE_PATH = Path(__file__).parent / "resposta.mp3"
@@ -145,7 +145,7 @@ async def test_health_check() -> bool:
     except httpx.RequestError as e:
         print(f"❌ Erro na requisição: {e}")
         print(f"   💡 Dica: A API não está respondendo. Inicie-a com:")
-        print(f"      uvicorn api_audio_processing.main:app --port 8001 --reload")
+        print(f"      uvicorn api_audio_processing.main:app --port 5001 --reload")
         return False
     except Exception as e:
         print(f"❌ Erro inesperado: {e}")

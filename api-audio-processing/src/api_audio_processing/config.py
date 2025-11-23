@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     # API
     api_title: str = "Audio Processing API"
     api_version: str = "0.1.0"
-    api_port: int = 8001
+    api_port: int = 5001
 
     # OpenAI (para TTS e Whisper)
     openai_api_key: str = ""

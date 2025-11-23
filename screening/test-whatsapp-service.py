@@ -11,7 +11,7 @@ Uso:
     python test-whatsapp-service.py
 
 Pré-requisitos:
-    - WhatsApp Service rodando em http://localhost:3001
+    - WhatsApp Service rodando em http://localhost:5002
     - FastAPI e httpx instalados: uv pip install fastapi uvicorn httpx
 """
 import asyncio
@@ -109,7 +109,7 @@ async def get_messages():
 # CLIENTE DE TESTE
 # ============================================================================
 
-WHATSAPP_SERVICE_URL = os.getenv("WHATSAPP_SERVICE_URL", "http://localhost:3001")
+WHATSAPP_SERVICE_URL = os.getenv("WHATSAPP_SERVICE_URL", "http://localhost:5001"2
 ORCHESTRATOR_URL = os.getenv("ORCHESTRATOR_URL", "http://localhost:8002")
 
 

@@ -101,8 +101,5 @@ src/api_mcp_projetos_lei/
   - [ ] Homepage do assunto
   - [ ] Notícia relacionada ao assunto
   - [ ] Projeto de lei relacionado ao assunto
-- [ ] Adicionar cache de resultados
-- [ ] Criar testes unitários
 - [ ] Sistema de crawler periódico ou on-demand
-- [ ] Adicionar rate limiting
 - [ ] Extração de links de propostas de lei em notícias
