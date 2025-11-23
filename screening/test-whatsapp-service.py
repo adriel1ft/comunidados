@@ -109,7 +109,7 @@ async def get_messages():
 # CLIENTE DE TESTE
 # ============================================================================
 
-WHATSAPP_SERVICE_URL = os.getenv("WHATSAPP_SERVICE_URL", "http://localhost:5001"2
+WHATSAPP_SERVICE_URL = os.getenv("WHATSAPP_SERVICE_URL", "http://localhost:5002")
 ORCHESTRATOR_URL = os.getenv("ORCHESTRATOR_URL", "http://localhost:8002")
 
 

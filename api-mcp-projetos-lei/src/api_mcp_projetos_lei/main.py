@@ -57,7 +57,11 @@ def main() -> None:
         f"Iniciando {settings.mcp_server_name} v{settings.mcp_server_version} "
         f"com transporte 'streamable-http' na porta {os.getenv('MCP_SERVER_PORT', 8000)}"
     )
-    mcp.run(transport="streamable-http", port=int(os.getenv("MCP_SERVER_PORT", 8000)))
+    mcp.run(
+        transport="streamable-http",
+        host="0.0.0.0",
+        port=int(os.getenv("MCP_SERVER_PORT", 8000))
+    )
 
 
 if __name__ == "__main__":
