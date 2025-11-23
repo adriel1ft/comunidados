@@ -55,6 +55,29 @@
 # Serviço do WhatsApp
 
 - wwebjs de cria, o servidor node vai servir basicamente só pra enviar e receber mensagem
-- podemos fazer o enviador de mensagem ser embutido em um webhook, que vai disparar a mensagem assim que receber  
-  um sinal do backend "orquestrador" que pode ser a API 1 ou 3 ou outra
+- podemos fazer o enviador de mensagem ser embutido em um webhook, que vai disparar a mensagem assim que receber um sinal do backend "orquestrador" que pode ser a API 1 ou 3 ou outra
 - ao receber a mensagem, ele só envia pro servidor via POST, que por si só vai fazer todo o processamento necessário
+
+# API 4 - Agentes que geram mensagens do WhatsApp
+
+- o orquestrador irá pedir pra certos agentes expostos gerarem outputs com base nas entradas do usuário
+- ou pode ser um agente que irá chamar outros agentes hierarquicamente com base na classificação da mensagem
+- é importante ter um texto auxiliar em casos de que faremos uma transcrição, para enviar junto
+
+# API orquestradora de mensagem
+
+- que recebe e envia as mensagens por session id
+- a ideia do session id aqui é que seja uma janela de tempo que o usuário fala sobre um determinado
+  contexto
+- estilo messagequeue (?)
+
+## Fluxo
+
+- caso a mensagem seja áudio, transcrever para texto na API 3
+- irá fazer a chamada para o agente na API 4, que vai gerar um resultado textual
+- caso o usuário prefira áudio
+  (ficou explícito/implícito na mensagem (API 4 gerenciaria isso)) ou
+  é uma preferência do usuário cadastrado
+  o orquestrador vai fazer a chamada pra API 3 de text to speech
+  e pegar o url de resposta do áudio
+- enviar via POST webhook pro servidor do whatsapp `/webhook/whatsapp`
