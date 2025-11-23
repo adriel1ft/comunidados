@@ -118,3 +118,65 @@ async def buscar_noticias_relacionadas(
         Lista de notícias com links para projetos relacionados
     """
     return await buscar_noticias_tema(tema, limite=10)
+
+async def identificar_projetos_opiniao(mensagem_usuario: str, projetos_sugeridos: list) -> list:
+    """
+    Identifica sobre qual(is) PL(s) o usuário está emitindo opinião, a partir da mensagem e dos PLs sugeridos.
+    Args:
+        mensagem_usuario: Texto da opinião do usuário
+        projetos_sugeridos: Lista de PLs sugeridos anteriormente
+    Returns:
+        Lista de PLs identificados na opinião
+    """
+    # Lógica de matching pode ser NLP, fuzzy, etc.
+    # Aqui é só um stub
+    return []
+
+async def classificar_tema_opiniao(mensagem_usuario: str) -> str:
+    """
+    Classifica o tema principal da opinião do usuário.
+    Args:
+        mensagem_usuario: Texto da opinião do usuário
+    Returns:
+        Tema identificado (ex: 'saúde', 'educação', ...)
+    """
+    return ""
+
+async def classificar_sentimento_opiniao(mensagem_usuario: str) -> str:
+    """
+    Classifica o sentimento da opinião do usuário.
+    Args:
+        mensagem_usuario: Texto da opinião do usuário
+    Returns:
+        Sentimento identificado (ex: 'alegre', 'raivoso', ...)
+    """
+    return ""
+
+async def registrar_opiniao_usuario(
+    projetos: list,
+    tema: str,
+    sentimento: str,
+    opiniao: str,
+    contexto: str = None
+) -> dict:
+    """
+    Registra a opinião do usuário sobre um ou mais projetos de lei, tema e sentimento.
+    Args:
+        projetos: Lista de identificadores dos PLs (ex: ['PL-1234/2024', ...]) ou ['nova-lei']
+        tema: Tema principal da opinião (ex: 'saúde', 'educação', ...)
+        sentimento: Sentimento do usuário (ex: 'alegre', 'receoso', 'raivoso', 'esperançoso', ...)
+        opiniao: Texto livre da opinião do usuário
+        contexto: (opcional) Mensagem original/contexto
+    Returns:
+        dict com status e confirmação
+    """
+    logger.info(f"Registrando opinião: projetos={projetos}, tema={tema}, sentimento={sentimento}, opiniao={opiniao}")
+    # Aqui você pode salvar em banco, enviar para fila, etc.
+    return {
+        "status": "ok",
+        "projetos": projetos,
+        "tema": tema,
+        "sentimento": sentimento,
+        "opiniao": opiniao,
+        "contexto": contexto
+    }
