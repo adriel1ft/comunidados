@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     
     # OpenAI
     openai_api_key: str = ""
-    agent_model: str = "gpt-4-turbo"
+    agent_model: str = "gpt-4o-mini"
     agent_temperature: float = 0.7
     
     # MCP Servers

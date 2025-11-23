@@ -30,7 +30,6 @@ class AgentResponse(BaseModel):
     response_text: str
     auxiliary_text: Optional[str] = None
     should_send_audio: bool = False
-    confidence: float = Field(ge=0, le=1)
     timestamp: datetime = Field(default_factory=datetime.now)
 
 

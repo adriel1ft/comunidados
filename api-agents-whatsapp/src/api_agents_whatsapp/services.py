@@ -18,13 +18,15 @@ class AgentService:
     """Gerenciador de agentes Agno com suporte a múltiplos MCPs"""
     
     def __init__(self):
-        self.mcp_tools_cache = {}
         self.agent = None
+        self.mcp_context = None
         self._initialize_agent()
     
     def _initialize_agent(self):
-        """Inicializa o agente com modelo OpenAI"""
+        """Inicializa o agente com modelo OpenAI e ferramentas MCP"""
         try:
+            logger.info("🚀 Inicializando Agente Agno...")
+            
             self.agent = Agent(
                 model=OpenAIChat(
                     id=settings.agent_model,
@@ -37,85 +39,73 @@ class AgentService:
             logger.error(f"❌ Erro ao inicializar agente: {e}")
             raise
     
-    async def _get_mcp_tools(self, mcp_url: str) -> Optional[MCPTools]:
+    async def _setup_mcp_tools(self) -> Optional[MCPTools]:
         """
-        Obtém e cacheia ferramentas MCP
+        Configura conexão com servidor MCP de Projetos de Lei
         
-        Args:
-            mcp_url: URL do servidor MCP
-            
         Returns:
-            Instância de MCPTools ou None se falhar
+            MCPTools conectado ou None se falhar
         """
-        if mcp_url in self.mcp_tools_cache:
-            return self.mcp_tools_cache[mcp_url]
-        
         try:
-            logger.info(f"🔌 Conectando ao MCP: {mcp_url}")
+            logger.info(f"🔌 Conectando ao MCP: {settings.mcp_projetos_lei_url}")
+            
             mcp_tools = MCPTools(
                 transport="streamable-http",
-                url=mcp_url
+                url=settings.mcp_projetos_lei_url
             )
             
-            self.mcp_tools_cache[mcp_url] = mcp_tools
-            logger.info(f"✅ Conectado ao MCP: {mcp_url}")
+            logger.info(f"✅ MCP conectado com sucesso")
             return mcp_tools
         except Exception as e:
-            logger.error(f"❌ Erro ao conectar ao MCP {mcp_url}: {e}")
+            logger.error(f"❌ Erro ao conectar ao MCP: {e}")
+            logger.warning("⚠️  Continuando sem ferramentas MCP")
             return None
     
     async def process_message(self, request: AgentRequest) -> AgentResponse:
         """
-        Processa uma mensagem do usuário usando o agente
+        Processa uma mensagem do usuário usando o agente Agno
         
         Args:
             request: Requisição do agente
             
         Returns:
-            Resposta do agente
+            Resposta do agente com metadados
         """
         try:
             logger.info(f"🤖 Processando mensagem de {request.user_id}")
             logger.info(f"   Tipo: {request.message_type}")
             logger.info(f"   Conteúdo: {request.user_message[:100]}...")
             
-            # Conectar ao MCP de projetos de lei (principal)
-            mcp_tools = await self._get_mcp_tools(
-                settings.mcp_projetos_lei_url
-            )
+            # Construir prompt baseado no tipo de mensagem
+            prompt = self._build_prompt(request)
             
-            tools = []
+            # Configurar ferramentas MCP
+            mcp_tools = await self._setup_mcp_tools()
+            
+            # Executar agente com context manager se MCP disponível
             if mcp_tools:
-                tools = [mcp_tools]
+                async with mcp_tools:
+                    # Criar agente com tools MCP
+                    agent_with_tools = Agent(
+                        model=OpenAIChat(
+                            id=settings.agent_model,
+                            api_key=settings.openai_api_key,
+                        ),
+                        tools=[mcp_tools],
+                        markdown=True
+                    )
+                    
+                    logger.info("📤 Enviando prompt para agente...")
+                    response_output = await agent_with_tools.arun(input=prompt)
             else:
-                logger.warning("⚠️  MCP indisponível, usando agente sem tools")
+                # Fallback: usar agente sem tools
+                logger.warning("⚠️  Usando agente sem ferramentas MCP")
+                response_output = await self.agent.arun(input=prompt)
             
-            # Criar agente com tools dinâmicas
-            async with MCPTools(
-                transport="streamable-http",
-                url=settings.mcp_projetos_lei_url
-            ) as mcp_context:
-                agent = Agent(
-                    model=OpenAIChat(
-                        id=settings.agent_model,
-                        api_key=settings.openai_api_key,
-                    ),
-                    tools=[mcp_context] if tools else [],
-                    markdown=True,
-                )
-                
-                # Construir prompt baseado no tipo de mensagem
-                prompt = self._build_prompt(request)
-                
-                # Executar agente
-                response_output = await agent.arun(input=prompt)
-
-                if hasattr(response_output, 'content'):
-                    response_text = response_output.content
-                elif hasattr(response_output, 'message'):
-                    response_text = response_output.message
-                else:
-                    response_text = str(response_output)
+            # Extrair texto da resposta
+            response_text = self._extract_response_text(response_output)
+            
+            logger.info(f"✅ Resposta recebida: {response_text[:80]}...")
             
             # Determinar se deve enviar áudio
             should_send_audio = self._should_send_audio(request)
@@ -125,12 +115,8 @@ class AgentService:
                 session_id=request.session_id,
                 user_id=request.user_id,
                 response_text=response_text,
-                auxiliary_text=None if not should_send_audio else (
-                    "📢 Esta resposta foi gerada pelo assistente de IA. "
-                    "Para mais informações, acesse o e-Cidadania."
-                ),
+                auxiliary_text=self._get_auxiliary_text(should_send_audio),
                 should_send_audio=should_send_audio,
-                confidence=0.85,
                 timestamp=datetime.now(),
             )
             
@@ -143,7 +129,35 @@ class AgentService:
             
         except Exception as e:
             logger.error(f"❌ Erro ao processar mensagem: {e}")
+            logger.exception("Traceback completo:")
             raise
+    
+    def _extract_response_text(self, response_output) -> str:
+        """
+        Extrai o texto da resposta do agente
+        
+        Args:
+            response_output: Output do agente (pode ter vários formatos)
+            
+        Returns:
+            Texto extraído
+        """
+        # Tentar diferentes atributos comuns
+        if hasattr(response_output, 'content'):
+            text = response_output.content
+        elif hasattr(response_output, 'message'):
+            text = response_output.message
+        elif hasattr(response_output, 'text'):
+            text = response_output.text
+        elif isinstance(response_output, dict):
+            text = response_output.get('content') or response_output.get('message') or str(response_output)
+        elif isinstance(response_output, str):
+            text = response_output
+        else:
+            text = str(response_output)
+        
+        # Garantir que não retorna None
+        return text.strip() if text else "Desculpe, não consegui processar sua mensagem no momento."
     
     def _build_prompt(self, request: AgentRequest) -> str:
         """
@@ -153,31 +167,62 @@ class AgentService:
             request: Requisição do agente
             
         Returns:
-            Prompt formatado
+            Prompt formatado para o agente
         """
-        base_prompt = f"""
-Você é um assistente especializado em legislação brasileira e projetos de lei.
-A mensagem é do tipo: {request.message_type}
+        base_prompt = f"""Você é um assistente especializado em legislação brasileira e projetos de lei do Congresso Nacional.
 
-Mensagem do usuário:
+📋 CONTEXTO DA MENSAGEM:
+- Tipo: {request.message_type}
+- Usuário: {request.user_id}
+- Session: {request.session_id}
+
+💬 MENSAGEM DO USUÁRIO:
 {request.user_message}
 
-Instruções:
-1. Busque informações relevantes usando as tools disponíveis (se houver)
-2. Responda de forma clara, objetiva e acessível
-3. Cite as fontes quando apropriado
-4. Se relevante, mencione links úteis (e-Cidadania, Câmara dos Deputados)
-5. Mantenha tom profissional mas amigável
-"""
+📋 INSTRUÇÕES PARA RESPOSTA:
+1. Use as ferramentas MCP disponíveis para buscar informações atualizadas sobre projetos de lei
+2. Responda de forma clara, objetiva e acessível (evite jargão técnico excessivo)
+3. Estruture a resposta com:
+   - Resposta direta à pergunta
+   - Contexto e background relevante
+   - Links úteis quando apropriado (e-Cidadania, Câmara dos Deputados)
+4. Se encontrar múltiplos projetos relevantes, resuma os 3 principais
+5. Cite as fontes de informação
+6. Mantenha tom profissional mas amigável
+7. Se a pergunta não está relacionada a legislação, redirecione gentilmente
+
+⚙️ INFORMAÇÕES DO USUÁRIO:"""
         
+        # Adicionar preferências do usuário se disponíveis
         if request.user_preferences:
             if request.user_preferences.get("topics"):
-                base_prompt += (
-                    f"\nTópicos de interesse do usuário: "
-                    f"{', '.join(request.user_preferences['topics'])}\n"
-                )
+                topics = ", ".join(request.user_preferences["topics"])
+                base_prompt += f"\n- Tópicos de interesse: {topics}"
+            
+            if request.user_preferences.get("prefer_audio"):
+                base_prompt += "\n- Preferência: Respostas em áudio (responda concisamente)"
+        
+        base_prompt += "\n\nAGORA, responda à mensagem do usuário:"
         
         return base_prompt
+    
+    def _get_auxiliary_text(self, should_send_audio: bool) -> Optional[str]:
+        """
+        Retorna texto auxiliar para TTS se necessário
+        
+        Args:
+            should_send_audio: Se deve enviar áudio
+            
+        Returns:
+            Texto auxiliar ou None
+        """
+        if not should_send_audio:
+            return None
+        
+        return (
+            "📢 Esta resposta foi gerada pelo assistente de IA do DevsImpacto. "
+            "Para mais informações, visite e-Cidadania.camara.leg.br"
+        )
     
     def _should_send_audio(self, request: AgentRequest) -> bool:
         """
