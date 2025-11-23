@@ -135,19 +135,23 @@ async def test_simple_text_message():
 
     if result:
         print(f"\n✅ Resposta recebida!")
-        print(f"\n📤 Response Details:")
-        print(f"  - Session: {result['session_id']}")
-        print(f"  - User: {result['user_id']}")
-        print(f"  - Confiança: {result['confidence']:.2%}")
-        print(f"  - Enviar Áudio: {result['should_send_audio']}")
-        print(f"  - Timestamp: {result['timestamp']}\n")
-        print(f"💬 Resposta do Agente:")
-        print(f"   {result['response_text'][:300]}...")
+        print(f"\n[DEBUG] Conteúdo da resposta:")
+        print(result)
+        try:
+            print(f"\n📤 Response Details:")
+            print(f"  - Session: {result['session_id']}")
+            print(f"  - User: {result['user_id']}")
+            print(f"  - Confiança: {result['confidence']:.2%}")
+            print(f"  - Enviar Áudio: {result['should_send_audio']}")
+            print(f"  - Timestamp: {result['timestamp']}\n")
+            print(f"💬 Resposta do Agente:")
+            print(f"   {result['response_text'][:300]}...")
 
-        if result.get('auxiliary_text'):
-            print(f"\n📎 Texto Auxiliar:")
-            print(f"   {result['auxiliary_text']}")
-
+            if result.get('auxiliary_text'):
+                print(f"\n📎 Texto Auxiliar:")
+                print(f"   {result['auxiliary_text']}")
+        except Exception as e:
+            print(f"[ERRO] Falha ao acessar campos esperados: {e}")
         return True
     else:
         print(f"❌ Falha ao processar mensagem")
