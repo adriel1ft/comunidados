@@ -8,6 +8,8 @@ from .scrapers.camara_deputados import CamaraScraper
 from .config import settings
 import os
 from dotenv import load_dotenv
+import requests
+from typing import List, Dict, Any
 
 load_dotenv()
 
@@ -123,10 +125,6 @@ async def buscar_noticias_relacionadas(
     """
     return await buscar_noticias_tema(tema, limite=10)
 
-
-import requests
-import os
-from typing import List, Dict, Any
 
 async def pesquisar_legislacoes_internet(
     termo: str,
