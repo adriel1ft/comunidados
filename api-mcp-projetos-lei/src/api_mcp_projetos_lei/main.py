@@ -10,7 +10,8 @@ from .tools import (
     buscar_projetos_mais_votados,
     buscar_noticias_tema,
     obter_detalhes_projeto,
-    buscar_noticias_relacionadas
+    buscar_noticias_relacionadas,
+    pesquisar_legislacoes_internet
 )
 from .resources import get_links_ecidadania
 from .prompts import get_prompt_analise_projeto
@@ -35,6 +36,7 @@ mcp.tool()(buscar_projetos_mais_votados)
 mcp.tool()(buscar_noticias_tema)
 mcp.tool()(obter_detalhes_projeto)
 mcp.tool()(buscar_noticias_relacionadas)
+mcp.tool()(pesquisar_legislacoes_internet)
 
 
 # Registrar Resources

@@ -16,6 +16,7 @@ dependencies = [
     "pydantic-settings>=2.0.0",
     "python-dotenv>=1.0.0",
     "requests>=2.31.0",
+    "duckduckgo_search>=2.6.0",
 ]
 
 [project.optional-dependencies]

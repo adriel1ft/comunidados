@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     # Scraping
     scraping_timeout: int = 60
     scraping_headless: bool = True
+
+    serpapi_api_key: str = ""
     
     # Cache
     cache_dir: Path = Path("./data/cache")
