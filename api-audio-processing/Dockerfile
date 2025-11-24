@@ -8,11 +8,10 @@ COPY . /app
 
 # Instala dependências
 RUN uv venv && \
-    uv pip install -e . -p .venv/bin/python
+    uv pip install -e .
 
-
-# Porta padrão
-EXPOSE 8001
+# Porta padrão (5001 para não conflitar)
+EXPOSE 5001
 
 # Entrypoint
 CMD [".venv/bin/api-audio-processing"]

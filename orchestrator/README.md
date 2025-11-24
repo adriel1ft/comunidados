@@ -166,8 +166,8 @@ orchestrator
 orchestrator --reload
 ```
 
-✅ API rodando em `http://localhost:5001`
-📚 Documentação: `http://localhost:5001/docs`
+✅ API rodando em `http://localhost:3000`
+📚 Documentação: `http://localhost:3000/docs`
 
 ## 📁 Estrutura do Projeto
 
@@ -271,7 +271,7 @@ orchestrator
 
 ```bash
 # Mensagem 1
-curl -X POST http://localhost:5001/receive-message \
+curl -X POST http://localhost:3000/receive-message \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "test_user_123",
@@ -283,7 +283,7 @@ curl -X POST http://localhost:5001/receive-message \
 
 # Mensagem 2 (aguarde < 15s)
 sleep 5
-curl -X POST http://localhost:5001/receive-message \
+curl -X POST http://localhost:3000/receive-message \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "test_user_123",
@@ -295,7 +295,7 @@ curl -X POST http://localhost:5001/receive-message \
 
 # Mensagem 3 (aguarde < 15s)
 sleep 5
-curl -X POST http://localhost:5001/receive-message \
+curl -X POST http://localhost:3000/receive-message \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "test_user_123",
@@ -361,133 +361,10 @@ const response = await fetch("http://localhost:5001/receive-message", {
 
 ```python
 # Transcrição
-POST http://localhost:5002/transcribe
+POST http://localhost:5001/transcribe
 Files: {audio: <arquivo>}
 Response: {"text": "..."}
 
 # Síntese
-POST http://localhost:5002/synthesize
+POST http://localhost:5001/synthesize
 JSON: {"text": "...", "auxiliary_text": "..."}
-Response: {"audio_url": "..."}
-```
-
-### API de Agentes
-
-**Como o Orquestrador a usa:**
-
-```python
-POST http://localhost:5000/process-message
-{
-  "user_message": "...",
-  "user_id": "...",
-  "session_id": "...",
-  "message_type": "text",
-  "user_preferences": {
-    "prefer_audio": false,
-    "topics": ["cidadania"]
-  }
-}
-Response: {
-  "response_text": "...",
-  "should_send_audio": false,
-  "auxiliary_text": null,
-  "confidence": 0.85
-}
-```
-
-## 📚 Banco de Dados (MongoDB)
-
-### Collections
-
-#### `users`
-
-Armazena perfis de usuários.
-
-```json
-{
-  "user_id": "5585988123456@c.us",
-  "name": "João Silva",
-  "age": 28,
-  "location": "Fortaleza, CE",
-  "topics_of_interest": ["educação", "saúde"],
-  "prefer_audio": false,
-  "created_at": "2025-11-23T09:00:00",
-  "updated_at": "2025-11-23T10:00:00"
-}
-```
-
-#### `sessions`
-
-Armazena histórico de conversas.
-
-```json
-{
-  "session_id": "sess_5585988123456@c.us_1700724000.0",
-  "user_id": "5585988123456@c.us",
-  "messages": [
-    {
-      "user_messages": [
-        {
-          "type": "text",
-          "data": "Primeira mensagem",
-          "timestamp": "2025-11-23T10:00:00"
-        },
-        {
-          "type": "text",
-          "data": "Segunda mensagem",
-          "timestamp": "2025-11-23T10:00:05"
-        }
-      ],
-      "agent_response": "Aqui está a resposta...",
-      "grouped_count": 2,
-      "processed_at": "2025-11-23T10:00:25"
-    }
-  ],
-  "created_at": "2025-11-23T10:00:00",
-  "last_activity": "2025-11-23T10:00:25",
-  "is_active": true
-}
-```
-
-## 🚨 Troubleshooting
-
-### Erro: "Connection refused" ao MongoDB
-
-```bash
-# Verificar se MongoDB está rodando
-docker ps | grep mongodb
-
-# Se não estiver, iniciar:
-docker run -d -p 27017:27017 --name mongodb mongo:latest
-```
-
-### Erro: "Connection refused" à API de Agentes
-
-```bash
-# Verificar URL no .env
-cat .env | grep AGENT_API_URL
-
-# Certificar que API está rodando:
-curl http://localhost:5000/health
-```
-
-### Buffer não processa automaticamente
-
-```bash
-# Verificar logs
-tail -f .logs/orchestrator.log
-
-# Ou aumentar timeout no .env:
-MESSAGE_BATCH_TIMEOUT_SECONDS=60
-MESSAGE_INTER_TIMEOUT_SECONDS=20
-```
-
-### Mensagens não são combinadas
-
-```bash
-# Verificar se há mensagens no buffer:
-curl http://localhost:5001/buffer-status/{user_id}
-
-# Forçar processamento manualmente:
-curl -X POST http://localhost:5001/process-now/{user_id}
-```

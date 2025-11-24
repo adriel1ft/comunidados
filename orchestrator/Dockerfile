@@ -8,11 +8,10 @@ COPY . /app
 
 # Instala dependências
 RUN uv venv && \
-    uv pip install -e . -p .venv/bin/python
+    uv pip install -e .
 
-
-# Porta padrão
-EXPOSE 5000
+# Porta padrão (orchestrator usa 3000)
+EXPOSE 3000
 
 # Entrypoint
 CMD [".venv/bin/orchestrator"]

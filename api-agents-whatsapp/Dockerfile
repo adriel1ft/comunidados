@@ -8,11 +8,10 @@ COPY . /app
 
 # Instala dependências
 RUN uv venv && \
-    uv pip install -e . -p .venv/bin/python
-
+    uv pip install -e .
 
 # Porta padrão
 EXPOSE 5000
 
 # Entrypoint
-CMD [".venv/bin/api-agents"]
+CMD [".venv/bin/api-agents-whatsapp"]
