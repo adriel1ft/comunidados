@@ -6,6 +6,10 @@ from typing import List, Dict, Any
 import logging
 from .scrapers.camara_deputados import CamaraScraper
 from .config import settings
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -118,3 +122,42 @@ async def buscar_noticias_relacionadas(
         Lista de notícias com links para projetos relacionados
     """
     return await buscar_noticias_tema(tema, limite=10)
+
+
+import requests
+import os
+from typing import List, Dict, Any
+
+async def pesquisar_legislacoes_internet(
+    termo: str,
+    limite: int = 10
+) -> List[Dict[str, Any]]:
+    API_KEY = os.getenv("SERPAPI_API_KEY")
+    
+    try:
+        params = {
+            "q": f"legislação {termo} brasil",
+            "api_key": API_KEY,
+            "num": limite
+        }
+        
+        response = requests.get(
+            "https://serpapi.com/search",
+            params=params
+        )
+        data = response.json()
+        print(data)
+        
+        results = []
+        for item in data.get("organic_results", [])[:limite]:
+            results.append({
+                "titulo": item.get("title", ""),
+                "descricao": item.get("snippet", ""),
+                "link": item.get("link", ""),
+                "fonte": "SerpAPI"
+            })
+        
+        return results
+    except Exception as e:
+        logger.error(f"Erro SerpAPI: {str(e)}")
+        return []
